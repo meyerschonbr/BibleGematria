@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bible Gematria — גימטריה</title>
+
+    <!--
+  Classic Hebrew Tanach serif (Frank Ruhl Libre) loaded from Google Fonts.
+  If you're offline it falls back to David / serif, so the page still works.
+-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- all styling lives in styles.css -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <main class="window">
+
+        <!-- ===== title bar ===== -->
+        <div class="titlebar">
+            <div class="lights">
+                <span class="light red"></span>
+                <span class="light amber"></span>
+                <span class="light green"></span>
+            </div>
+            <div class="title">Bible Gematria<span class="he">גימטריה</span></div>
+        </div>
+
+        <div class="window-body">
+
+            <!-- ===== input + live value ===== -->
+            <p class="eyebrow">Word or phrase</p>
+            <div class="compute-row">
+                <textarea id="hebrewInput" class="hebrew-input" dir="rtl" placeholder="הקלד כאן…"
+                    aria-label="Hebrew word or phrase"></textarea>
+
+                <div class="value-display">
+                    <span class="label">גימטריה</span>
+                    <span class="value-number" id="valueNumber">0</span>
+                </div>
+            </div>
+
+            <!-- ===== controls ===== -->
+            <div class="controls">
+                <button class="btn-pill" id="kbToggle" aria-pressed="false" aria-controls="keyboard">
+                    ⌨ Hebrew keyboard
+                </button>
+
+                <label class="switch">
+                    <input type="checkbox" id="noEtnachta" />
+                    <span class="track"></span>
+                    <span class="switch-label">Don’t cross etnachta</span>
+                </label>
+            </div>
+
+            <!-- ===== on-screen Hebrew keyboard (faint numbers = gematria values) ===== -->
+            <div class="keyboard" id="keyboard">
+                <div class="keyboard-inner">
+                    <div class="kb-row">
+                        <button class="key" data-char="ק"><span class="val">100</span>ק</button>
+                        <button class="key" data-char="ר"><span class="val">200</span>ר</button>
+                        <button class="key" data-char="א"><span class="val">1</span>א</button>
+                        <button class="key" data-char="ט"><span class="val">9</span>ט</button>
+                        <button class="key" data-char="ו"><span class="val">6</span>ו</button>
+                        <button class="key" data-char="ן"><span class="val">50</span>ן</button>
+                        <button class="key" data-char="ם"><span class="val">40</span>ם</button>
+                        <button class="key" data-char="פ"><span class="val">80</span>פ</button>
+                        <button class="key blank" tabindex="-1" aria-hidden="true"></button>
+                        <button class="key blank" tabindex="-1" aria-hidden="true"></button>
+                        <button class="key blank" tabindex="-1" aria-hidden="true"></button>
+                    </div>
+                    <div class="kb-row">
+                        <button class="key" data-char="ש"><span class="val">300</span>ש</button>
+                        <button class="key" data-char="ד"><span class="val">4</span>ד</button>
+                        <button class="key" data-char="ג"><span class="val">3</span>ג</button>
+                        <button class="key" data-char="כ"><span class="val">20</span>כ</button>
+                        <button class="key" data-char="ע"><span class="val">70</span>ע</button>
+                        <button class="key" data-char="י"><span class="val">10</span>י</button>
+                        <button class="key" data-char="ח"><span class="val">8</span>ח</button>
+                        <button class="key" data-char="ל"><span class="val">30</span>ל</button>
+                        <button class="key" data-char="ך"><span class="val">20</span>ך</button>
+                        <button class="key" data-char="ף"><span class="val">80</span>ף</button>
+                    </div>
+                    <div class="kb-row">
+                        <button class="key" data-char="ז"><span class="val">7</span>ז</button>
+                        <button class="key" data-char="ס"><span class="val">60</span>ס</button>
+                        <button class="key" data-char="ב"><span class="val">2</span>ב</button>
+                        <button class="key" data-char="ה"><span class="val">5</span>ה</button>
+                        <button class="key" data-char="נ"><span class="val">50</span>נ</button>
+                        <button class="key" data-char="מ"><span class="val">40</span>מ</button>
+                        <button class="key" data-char="צ"><span class="val">90</span>צ</button>
+                        <button class="key" data-char="ת"><span class="val">400</span>ת</button>
+                        <button class="key" data-char="ץ"><span class="val">90</span>ץ</button>
+                    </div>
+                    <div class="kb-row">
+                        <button class="key util" data-char="־">־ maqqaf</button>
+                        <button class="key util wide" data-char=" ">space</button>
+                        <button class="key util" data-action="backspace">⌫ delete</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== book selection ===== -->
+            <div class="section">
+                <div class="section-head">
+                    <p class="eyebrow">Search in</p>
+                    <label class="switch">
+                        <input type="checkbox" id="allBooks" checked />
+                        <span class="track"></span>
+                        <span class="switch-label">All books</span>
+                    </label>
+                </div>
+
+                <div class="book-columns">
+                    <!-- Torah (5) -->
+                    <div class="book-group">
+                        <div class="group-title">תורה</div>
+                        <div class="book-list">
+                            <label class="book"><span class="name">בראשית</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">שמות</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">ויקרא</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">במדבר</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">דברים</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                        </div>
+                    </div>
+                    <!-- Prophets (21) -->
+                    <div class="book-group">
+                        <div class="group-title">נביאים</div>
+                        <div class="book-list">
+                            <label class="book"><span class="name">יהושע</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">שופטים</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">שמואל א</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">שמואל ב</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">מלכים א</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">מלכים ב</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">ישעיהו</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">ירמיהו</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">יחזקאל</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">הושע</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">יואל</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">עמוס</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">עובדיה</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">יונה</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">מיכה</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">נחום</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">חבקוק</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">צפניה</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">חגי</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">זכריה</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">מלאכי</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                        </div>
+                    </div>
+                    <!-- Writings (13) -->
+                    <div class="book-group">
+                        <div class="group-title">כתובים</div>
+                        <div class="book-list">
+                            <label class="book"><span class="name">תהילים</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">משלי</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">איוב</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">שיר השירים</span><input type="checkbox"
+                                    class="book-cb" checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">רות</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">איכה</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">קהלת</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">אסתר</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">דניאל</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">עזרא</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">נחמיה</span><input type="checkbox" class="book-cb"
+                                    checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">דברי הימים א</span><input type="checkbox"
+                                    class="book-cb" checked /><span class="check"></span></label>
+                            <label class="book"><span class="name">דברי הימים ב</span><input type="checkbox"
+                                    class="book-cb" checked /><span class="check"></span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== search ===== -->
+            <div class="search-bar">
+                <button class="btn-search" id="searchBtn">Search the Tanach</button>
+            </div>
+
+            <!-- ===== results stage (starts empty) ===== -->
+            <div class="results">
+                <p class="eyebrow">Results</p>
+                <div class="results-stage" id="stage" data-state="empty">
+
+                    <!-- empty -->
+                    <div class="state state-empty">
+                        <div class="glyph-wrap">
+                            <span class="glyph-ring"></span>
+                            <span class="glyph">א</span>
+                        </div>
+                        <p class="hint">Enter a word or phrase, then search.</p>
+                    </div>
+
+                    <!-- searching -->
+                    <div class="state state-searching">
+                        <div class="spinner"></div>
+                        <div class="counting" id="counting">א</div>
+                        <p class="hint">Summing letters…</p>
+                    </div>
+
+                    <!-- no results -->
+                    <div class="state state-none">
+                        <span class="glyph">∅</span>
+                        <p class="headline">No verses match that value.</p>
+                        <p class="hint">Try a different word, or widen the book selection.</p>
+                    </div>
+
+                    <!-- results found (mock data showing the MatchResult shape) -->
+                    <div class="state state-results">
+                        <div class="results-meta">
+                            <span class="count"><strong>3</strong> matches</span>
+                            <span>value 248</span>
+                        </div>
+
+                        <div class="result-card">
+                            <div class="result-head">
+                                <span class="result-ref">בראשית א׳:א׳</span>
+                                <span class="result-badge">248</span>
+                            </div>
+                            <p class="result-verse">בְּרֵאשִׁית <span class="match">בָּרָא אֱלֹהִים</span> אֵת
+                                הַשָּׁמַיִם וְאֵת הָאָרֶץ׃</p>
+                        </div>
+
+                        <div class="result-card">
+                            <div class="result-head">
+                                <span class="result-ref">שמות ג׳:ו׳</span>
+                                <span class="result-badge">248</span>
+                            </div>
+                            <p class="result-verse">וַיֹּאמֶר אָנֹכִי <span class="match">אֱלֹהֵי אָבִיךָ</span> אֱלֹהֵי
+                                אַבְרָהָם׃</p>
+                        </div>
+
+                        <div class="result-card">
+                            <div class="result-head">
+                                <span class="result-ref">תהילים כ״ג:א׳</span>
+                                <span class="result-badge">248</span>
+                            </div>
+                            <p class="result-verse">מִזְמוֹר לְדָוִד <span class="match">יְהוָה רֹעִי</span> לֹא
+                                אֶחְסָר׃</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div><!-- /window-body -->
+    </main>
+
+    <!-- demo plumbing lives in app.js (see the comment at the top of that file) -->
+    <script src="app.js"></script>
+</body>
+
+</html>
