@@ -2,4 +2,5 @@
   <Project Path="BibleGematria.Core/BibleGematria.Core.csproj" />
   <Project Path="BibleGematria.Tests/BibleGematria.Tests.csproj" />
   <Project Path="BibleGematria.Wpf/BibleGematria.Wpf.csproj" Id="0ec0c33c-33b5-4fdf-a406-d836f2298f11" />
+   <Project Path="BibleGematria.Api/BibleGematria.Api.csproj" />
 </Solution>

@@ -67,6 +67,7 @@ body {
    3. THE WINDOW  (classic Mac chrome)
    ===================================================================== */
 .window {
+  position: relative;
   width: 100%;
   max-width: 860px;
   background: var(--window);
@@ -413,6 +414,8 @@ body {
   box-shadow: 0 2px 10px rgba(0,0,0,.4) inset;
   overflow: hidden;
 }
+
+.state { position: relative; z-index: 1; }
 
 /* every state is hidden unless its name matches data-state */
 .state { display: none; }
