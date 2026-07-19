@@ -1,0 +1,23 @@
+info:
+  name: CsvExport
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:58227/api/search/export
+  body:
+    type: json
+    data: |-
+      {
+        "HebrewInput": "אדם",
+        "BookKeys": ["Genesis"],
+        "NoCrossEtnachta": false
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -9,8 +9,7 @@ builder.Services.AddSingleton(new TanachRepository(dataDir));
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
-
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.MapControllers();
-
 app.Run();

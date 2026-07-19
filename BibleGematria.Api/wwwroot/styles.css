@@ -1,0 +1,577 @@
+/* =====================================================================
+   1. DESIGN TOKENS
+   All colours, spacing and type live here so the whole look can be
+   re-skinned by editing one block. Dark navy ground, gold accents —
+   a nod to gold letters on a classic Tanach page, and to the idea that
+   each Hebrew letter is also a number.
+   ===================================================================== */
+:root {
+  /* -- palette -- */
+  --void:        #0a0e1a;   /* page background, deepest navy            */
+  --window:      #131a2c;   /* the Mac window body                      */
+  --panel:       #0d1322;   /* inset/recessed surfaces (text fields)    */
+  --raised:      #1b2440;   /* raised surfaces (buttons, keys)          */
+  --raised-hi:   #243056;   /* raised surface, hover                    */
+
+  --gold:        #d8b25e;   /* primary accent                           */
+  --gold-bright: #f2d488;   /* highlights, glow                         */
+  --gold-dim:    rgba(216,178,94,.35);
+
+  --ink:         #e9e6dc;   /* warm off-white primary text              */
+  --slate:       #7c87a3;   /* muted secondary text                     */
+  --slate-deep:  #4b5474;   /* faintest labels                          */
+
+  /* classic Mac traffic lights */
+  --mac-red:    #ff5f57;
+  --mac-amber:  #febc2e;
+  --mac-green:  #28c840;
+
+  /* hairlines & bevels — the classic Mac "raised / inset" trick:
+     a light line on top, a dark line on the bottom */
+  --edge-light: rgba(255,255,255,.07);
+  --edge-dark:  rgba(0,0,0,.5);
+  --border:     rgba(216,178,94,.16);
+
+  /* -- type -- */
+  --ui:     "Helvetica Neue", Helvetica, Arial, sans-serif; /* Mac-lineage UI face */
+  --hebrew: "Frank Ruhl Libre", "David", "Times New Roman", serif;
+  --mono:   ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --radius: 12px;
+}
+
+/* =====================================================================
+   2. RESET & BASE
+   ===================================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  min-height: 100vh;
+  font-family: var(--ui);
+  color: var(--ink);
+  background: var(--void);
+  /* subtle navy vignette + a faint gold glow up top, like screen light */
+  background-image:
+    radial-gradient(1100px 500px at 50% -8%, rgba(216,178,94,.10), transparent 60%),
+    radial-gradient(900px 900px at 50% 120%, rgba(20,30,60,.6), transparent 70%);
+  background-attachment: fixed;
+  display: flex;
+  justify-content: center;
+  padding: clamp(16px, 4vw, 56px);
+  line-height: 1.5;
+}
+
+/* =====================================================================
+   3. THE WINDOW  (classic Mac chrome)
+   ===================================================================== */
+.window {
+  position: relative;
+  width: 100%;
+  max-width: 860px;
+  background: var(--window);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  /* deep drop shadow + a hair of gold rim-light = "floating panel" */
+  box-shadow:
+    0 1px 0 var(--edge-light) inset,
+    0 30px 80px -20px rgba(0,0,0,.8),
+    0 0 0 1px rgba(0,0,0,.4);
+  overflow: hidden;
+  animation: window-in .6s cubic-bezier(.2,.8,.2,1) both;
+}
+
+/* --- title bar with pinstripes + traffic lights --- */
+.titlebar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 14px;
+  background:
+    linear-gradient(180deg, #1c2540, #141b2e);
+  border-bottom: 1px solid var(--edge-dark);
+  box-shadow: 0 1px 0 var(--edge-light) inset;
+}
+/* faint Platinum-style pinstripes across the bar */
+.titlebar::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    180deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px);
+  pointer-events: none;
+}
+.lights { display: flex; gap: 8px; }
+.light {
+  width: 12px; height: 12px; border-radius: 50%;
+  box-shadow: 0 0 0 .5px rgba(0,0,0,.4) inset;
+}
+.light.red   { background: var(--mac-red);   }
+.light.amber { background: var(--mac-amber); }
+.light.green { background: var(--mac-green); }
+
+.title {
+  position: absolute; left: 0; right: 0;
+  text-align: center;
+  font-size: 13px; font-weight: 500;
+  letter-spacing: .04em;
+  color: var(--slate);
+  pointer-events: none;
+}
+.title .he { font-family: var(--hebrew); color: var(--gold); margin-inline-start: 6px; }
+
+.window-body { padding: clamp(18px, 3vw, 30px); }
+
+/* small section eyebrow labels */
+.eyebrow {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .22em; text-transform: uppercase;
+  color: var(--slate-deep);
+  margin-bottom: 10px;
+}
+
+/* =====================================================================
+   4. INPUT + LIVE GEMATRIA VALUE  (the signature element)
+   ===================================================================== */
+.compute-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: stretch;
+}
+
+/* the Hebrew text field — recessed/inset bevel */
+.hebrew-input {
+  width: 100%;
+  min-height: 92px;
+  resize: vertical;
+  padding: 14px 16px;
+  font-family: var(--hebrew);
+  font-size: 26px;
+  line-height: 1.45;
+  color: var(--ink);
+  direction: rtl;
+  background: var(--panel);
+  border: 1px solid var(--edge-dark);
+  border-radius: 10px;
+  box-shadow:
+    0 2px 6px rgba(0,0,0,.45) inset,
+    0 1px 0 var(--edge-light);
+  outline: none;
+  transition: box-shadow .2s, border-color .2s;
+}
+.hebrew-input::placeholder { color: var(--slate-deep); }
+.hebrew-input:focus {
+  border-color: var(--gold-dim);
+  box-shadow:
+    0 2px 6px rgba(0,0,0,.45) inset,
+    0 0 0 3px rgba(216,178,94,.12);
+}
+
+/* the gold readout — framed like a calculator display */
+.value-display {
+  min-width: 150px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 12px 22px;
+  background: linear-gradient(180deg, #0c1120, #0a0e1a);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.5) inset;
+}
+.value-display .label {
+  font-family: var(--hebrew);
+  font-size: 14px; color: var(--slate);
+  letter-spacing: .02em;
+}
+.value-number {
+  font-size: 46px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold);
+  text-shadow: 0 0 18px rgba(216,178,94,.35);
+  line-height: 1.1;
+  transition: transform .15s ease;
+}
+/* tiny pop when the value changes (toggled by JS) */
+.value-number.bump { transform: scale(1.12); }
+
+/* =====================================================================
+   5. CONTROLS  (toggle switches + keyboard button)
+   ===================================================================== */
+.controls {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 18px 22px;
+  margin-top: 16px;
+}
+
+/* a small pill button (keyboard toggle) */
+.btn-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px;
+  font-family: var(--ui); font-size: 13px; color: var(--ink);
+  background: var(--raised);
+  border: 1px solid var(--edge-dark);
+  border-radius: 8px;
+  box-shadow: 0 1px 0 var(--edge-light) inset;
+  cursor: pointer;
+  transition: background .15s, transform .05s;
+}
+.btn-pill:hover  { background: var(--raised-hi); }
+.btn-pill:active { transform: translateY(1px); }
+.btn-pill[aria-pressed="true"] {
+  border-color: var(--gold-dim);
+  color: var(--gold-bright);
+  box-shadow: 0 0 0 1px var(--gold-dim) inset;
+}
+
+/* custom toggle switch built from a real checkbox (stays accessible) */
+.switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
+.switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.switch .track {
+  width: 38px; height: 22px; border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--edge-dark);
+  box-shadow: 0 1px 3px rgba(0,0,0,.5) inset;
+  position: relative; transition: background .2s;
+}
+.switch .track::after {
+  content: ""; position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--slate);
+  transition: transform .2s, background .2s;
+}
+.switch input:checked + .track { background: rgba(216,178,94,.22); }
+.switch input:checked + .track::after { transform: translateX(16px); background: var(--gold); }
+.switch input:focus-visible + .track { box-shadow: 0 0 0 3px rgba(216,178,94,.2); }
+.switch .switch-label { font-size: 13px; color: var(--slate); }
+
+/* =====================================================================
+   6. ON-SCREEN HEBREW KEYBOARD  (collapsible)
+   Each key shows its gematria value as a faint superscript — the quiet
+   thread tying the whole interface back to the subject.
+   ===================================================================== */
+.keyboard {
+  /* collapsed by default: animate max-height + opacity */
+  max-height: 0; opacity: 0;
+  overflow: hidden;
+  margin-top: 0;
+  transition: max-height .35s ease, opacity .3s ease, margin-top .35s ease;
+}
+.keyboard.open {
+  max-height: 340px; opacity: 1; margin-top: 18px;
+}
+.keyboard-inner {
+  width: fit-content;     /* shrink the panel down to the keyboard itself */
+  margin-inline: auto;    /* …then centre it in the window               */
+  padding: 14px;
+  background: var(--panel);
+  border: 1px solid var(--edge-dark);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.4) inset;
+}
+
+/* Keys run LEFT → RIGHT, exactly like a physical Hebrew keyboard.
+   The previous version had `direction: rtl` here, which flipped each row
+   and produced the mirrored layout. A real keyboard's hardware is laid out
+   left-to-right regardless of the script printed on the keys, so ק sits on
+   the LEFT (the QWERTY "e" position) and פ on the right. */
+.kb-row {
+  display: flex; justify-content: flex-start; gap: 6px;
+  margin-bottom: 6px;
+}
+.kb-row:last-child { margin-bottom: 0; }
+
+/* Stagger the rows the way real keyboard rows step rightward.
+   Rows are matched by position: 1 = top, 2 = home, 3 = bottom,
+   4 = the space / maqqaf / delete row. */
+.kb-row:nth-child(2) { padding-inline-start: 22px; }  /* home row   */
+.kb-row:nth-child(3) { padding-inline-start: 50px; }  /* bottom row */
+.kb-row:nth-child(4) { justify-content: center; }     /* spacebar row, centred */
+.key {
+  position: relative;
+  min-width: 38px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--hebrew); font-size: 20px; color: var(--ink);
+  background: linear-gradient(180deg, var(--raised), #151d36);
+  border: 1px solid var(--edge-dark);
+  border-radius: 7px;
+  box-shadow: 0 1px 0 var(--edge-light) inset, 0 2px 3px rgba(0,0,0,.35);
+  cursor: pointer;
+  transition: background .12s, transform .05s;
+  user-select: none;
+}
+.key:hover  { background: linear-gradient(180deg, var(--raised-hi), var(--raised)); }
+.key:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,.4) inset; }
+/* the gematria value, tucked in the corner, very faint */
+.key .val {
+  position: absolute; top: 3px; inset-inline-start: 5px;
+  font-family: var(--mono); font-size: 8px;
+  color: var(--gold-dim); letter-spacing: 0;
+}
+.key.wide  { min-width: 120px; }
+.key.util  { font-family: var(--ui); font-size: 13px; color: var(--slate); }
+/* inert filler keys (to the right of פ) — present only for alignment */
+.key.blank { pointer-events: none; opacity: .45; box-shadow: none; }
+
+/* =====================================================================
+   7. BOOK SELECTION
+   ===================================================================== */
+.section { margin-top: 26px; }
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.book-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.book-group .group-title {
+  font-family: var(--hebrew); font-size: 16px; color: var(--gold);
+  padding-bottom: 6px; margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+.book-list {
+  display: flex; flex-direction: column; gap: 2px;
+  max-height: 300px;          /* cap the tall sections (Nevi'im has 21 books) */
+  overflow-y: auto;           /* …and let the long ones scroll inside         */
+  padding-inline-end: 4px;    /* breathing room so the scrollbar clears text  */
+}
+/* slim gold scrollbar, matching the results panel */
+.book-list::-webkit-scrollbar { width: 8px; }
+.book-list::-webkit-scrollbar-thumb {
+  background: rgba(216,178,94,.3); border-radius: 8px;
+}
+
+/* a checkable book row */
+.book {
+  display: flex; align-items: center; gap: 8px;
+  flex-direction: row-reverse;          /* checkbox sits left, Hebrew reads right */
+  justify-content: flex-end;
+  padding: 4px 6px; border-radius: 6px;
+  cursor: pointer; transition: background .12s;
+}
+.book:hover { background: rgba(255,255,255,.03); }
+.book input { position: absolute; opacity: 0; width: 0; height: 0; }
+.book .check {
+  width: 16px; height: 16px; flex: 0 0 16px;
+  border-radius: 4px;
+  background: var(--panel);
+  border: 1px solid var(--edge-dark);
+  box-shadow: 0 1px 2px rgba(0,0,0,.5) inset;
+  display: grid; place-items: center;
+  transition: background .15s, border-color .15s;
+}
+.book .check::after {
+  content: "✓"; font-size: 11px; color: var(--void);
+  opacity: 0; transform: scale(.6); transition: opacity .12s, transform .12s;
+}
+.book input:checked + .check {
+  background: var(--gold); border-color: var(--gold-bright);
+}
+.book input:checked + .check::after { opacity: 1; transform: scale(1); }
+.book input:focus-visible + .check { box-shadow: 0 0 0 3px rgba(216,178,94,.25); }
+.book .name {
+  font-family: var(--hebrew); font-size: 16px; color: var(--ink);
+  direction: rtl;
+}
+
+/* =====================================================================
+   8. SEARCH BUTTON
+   ===================================================================== */
+.search-bar { margin-top: 26px; }
+.btn-search {
+  width: 100%;
+  padding: 14px;
+  font-family: var(--ui); font-size: 15px; font-weight: 600;
+  letter-spacing: .03em;
+  color: var(--void);
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  border: 1px solid rgba(0,0,0,.3);
+  border-radius: 10px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.4) inset,
+    0 6px 20px -6px rgba(216,178,94,.5);
+  cursor: pointer;
+  transition: filter .15s, transform .05s;
+}
+.btn-search:hover  { filter: brightness(1.06); }
+.btn-search:active { transform: translateY(1px); }
+.btn-search:disabled { filter: grayscale(.6) brightness(.7); cursor: default; }
+
+/* =====================================================================
+   9. RESULTS — three states share one container, switched by data-state
+   ===================================================================== */
+.results { margin-top: 26px; }
+.results-stage {
+  position: relative;
+  min-height: 220px;
+  background: var(--panel);
+  border: 1px solid var(--edge-dark);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.4) inset;
+  overflow: hidden;
+}
+
+.state { position: relative; z-index: 1; }
+
+/* every state is hidden unless its name matches data-state */
+.state { display: none; }
+.results-stage[data-state="empty"]     .state-empty,
+.results-stage[data-state="searching"] .state-searching,
+.results-stage[data-state="results"]   .state-results,
+.results-stage[data-state="none"]      .state-none { display: block; }
+
+/* --- 9a. EMPTY: a slowly breathing gold aleph --- */
+.state-empty {
+  display: none;
+  text-align: center;
+  padding: 48px 24px;
+  animation: fade-up .4s ease both;
+}
+.glyph {
+  font-family: var(--hebrew); font-size: 72px; color: var(--gold);
+  text-shadow: 0 0 30px rgba(216,178,94,.3);
+  animation: breathe 4.5s ease-in-out infinite;
+  display: inline-block;
+}
+/* a faint ring drifting behind the glyph */
+.glyph-wrap { position: relative; display: inline-block; margin-bottom: 14px; }
+.glyph-ring {
+  position: absolute; inset: -22px;
+  border: 1px solid var(--gold-dim); border-radius: 50%;
+  animation: drift 14s linear infinite;
+  opacity: .5;
+}
+.state-empty .hint { color: var(--slate); font-size: 14px; }
+
+/* --- 9b. SEARCHING: a spinning gold arc + a flicking letter counter --- */
+.state-searching {
+  display: none;
+  text-align: center;
+  padding: 52px 24px;
+  animation: fade-up .3s ease both;
+}
+.spinner {
+  width: 44px; height: 44px; margin: 0 auto 18px;
+  border-radius: 50%;
+  border: 3px solid rgba(216,178,94,.15);
+  border-top-color: var(--gold);
+  animation: spin .8s linear infinite;
+}
+.counting {
+  font-family: var(--hebrew); font-size: 22px; color: var(--gold);
+  min-height: 28px;
+}
+.state-searching .hint { color: var(--slate); font-size: 13px; margin-top: 6px; }
+
+/* --- 9c. NO RESULTS --- */
+.state-none {
+  display: none; text-align: center; padding: 48px 24px;
+  animation: fade-up .4s ease both;
+}
+.state-none .glyph { animation: none; opacity: .55; }
+.state-none .headline { color: var(--ink); font-size: 16px; margin-bottom: 4px; }
+.state-none .hint { color: var(--slate); font-size: 13px; }
+
+/* --- 9d. RESULTS: a scrollable list of cards --- */
+.state-results { display: none; padding: 14px; max-height: 460px; overflow-y: auto; }
+.results-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 6px 12px;
+  font-size: 12px; color: var(--slate);
+  letter-spacing: .02em;
+}
+.results-meta .count strong { color: var(--gold); font-weight: 700; }
+
+.result-card {
+  background: var(--window);
+  border: 1px solid var(--edge-dark);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 0 var(--edge-light) inset;
+  /* staggered entrance, delay set per-card below */
+  opacity: 0;
+  animation: card-in .45s cubic-bezier(.2,.8,.2,1) forwards;
+}
+.result-card:nth-child(1) { animation-delay: .04s; }
+.result-card:nth-child(2) { animation-delay: .10s; }
+.result-card:nth-child(3) { animation-delay: .16s; }
+.result-card:nth-child(4) { animation-delay: .22s; }
+.result-card:nth-child(5) { animation-delay: .28s; }
+
+.result-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.result-ref {
+  font-family: var(--hebrew); font-size: 15px; color: var(--gold);
+  direction: rtl;
+}
+.result-badge {
+  font-family: var(--mono); font-size: 12px; color: var(--void);
+  background: var(--gold); padding: 2px 9px; border-radius: 999px;
+  font-weight: 700;
+}
+.result-verse {
+  font-family: var(--hebrew); font-size: 21px; line-height: 1.7;
+  color: var(--ink); direction: rtl; text-align: right;
+}
+/* the matched word(s) — gold + underline, the way RenderVerseText bolds them */
+.result-verse .match {
+  color: var(--gold-bright);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--gold-dim);
+  text-underline-offset: 4px;
+}
+
+/* nice thin gold scrollbar inside the results */
+.state-results::-webkit-scrollbar { width: 8px; }
+.state-results::-webkit-scrollbar-thumb {
+  background: rgba(216,178,94,.3); border-radius: 8px;
+}
+
+/* =====================================================================
+   10. KEYFRAMES
+   ===================================================================== */
+@keyframes window-in {
+  from { opacity: 0; transform: translateY(14px) scale(.99); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1);    opacity: .85; }
+  50%      { transform: scale(1.07); opacity: 1;   }
+}
+@keyframes drift  { to { transform: rotate(360deg); } }
+@keyframes spin   { to { transform: rotate(360deg); } }
+
+/* =====================================================================
+   11. RESPONSIVE + ACCESSIBILITY
+   ===================================================================== */
+@media (max-width: 640px) {
+  .compute-row { grid-template-columns: 1fr; }
+  .value-display { min-width: 0; }
+  .book-columns { grid-template-columns: 1fr; gap: 22px; }
+  .value-number { font-size: 40px; }
+}
+
+/* respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}

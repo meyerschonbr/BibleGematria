@@ -1,6 +1,8 @@
 using BibleGematria.Core;
 using BibleGematria.Core.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
+using System.Linq;
 
 namespace BibleGematria.Api.Controllers
 {
@@ -36,7 +38,32 @@ namespace BibleGematria.Api.Controllers
 
             return Ok(results);
         }
+        [HttpPost("export")]
+        public ActionResult ExportCsv([FromBody] SearchRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.HebrewInput))
+            {
+                return BadRequest("Hebrew input is required.");
+            }
+            if (request.BookKeys.Count == 0)
+            {
+                return BadRequest("At least one book must be selected.");
+            }
+            var verses = _repository.GetBooks(request.BookKeys);
+
+            int target = GematriaCalculator.Compute(request.HebrewInput);
+
+            var service = new SearchService(verses) { MaxPhraseLength = 15 };
+
+            var results = request.NoCrossEtnachta ? service.FindPhraseMatchesNoBoundary(target) : service.FindPhraseMatches(target);
+
+            string csv = CsvExporter.Export(results, request.HebrewInput, target);
+            byte[] bytes = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(csv)).ToArray();
+            return File(bytes, "text/csv", "gematria-results.csv");
+
+        }
     }
+
     public class SearchRequest
     {
         public string HebrewInput { get; set; } = String.Empty;
