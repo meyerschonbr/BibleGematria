@@ -47,6 +47,7 @@ const allBooks = document.getElementById('allBooks');
 const bookCbs  = document.querySelectorAll('.book-cb');
 allBooks.addEventListener('change', () => {
   bookCbs.forEach(cb => cb.checked = allBooks.checked);
+  if (stage.dataset.state === 'results') runSearch();
 });
 bookCbs.forEach(cb => cb.addEventListener('change', () => {
   allBooks.checked = [...bookCbs].every(c => c.checked);
@@ -172,6 +173,10 @@ bookCbs.forEach(cb => cb.addEventListener('change', () => {
   if (stage.dataset.state === 'results') runSearch();
 }));
 
+document.getElementById('noEtnachta').addEventListener('change', () => {
+  if (stage.dataset.state === 'results') runSearch();
+});
+
 clearBtn.addEventListener('click', () => {
   stage.dataset.state = 'empty';
   clearBtn.style.display = 'none';
@@ -192,11 +197,15 @@ exportBtn.addEventListener('click', async () => {
 
   if (!response.ok) return;
 
+  const disposition = response.headers.get('Content-Disposition') || '';
+  const encodedMatch = disposition.match(/filename\*=UTF-8''([^;]+)/);
+  const fileName = encodedMatch ? decodeURIComponent(encodedMatch[1]) : 'gematria-results.xlsx';
+
   const blob = await response.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'gematria-results.csv';
+  a.download = fileName;
   a.click();
   URL.revokeObjectURL(url);
 });

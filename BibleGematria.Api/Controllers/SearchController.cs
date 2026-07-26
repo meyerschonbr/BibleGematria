@@ -1,7 +1,6 @@
 using BibleGematria.Core;
 using BibleGematria.Core.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Text;
 using System.Linq;
 
 namespace BibleGematria.Api.Controllers
@@ -39,7 +38,7 @@ namespace BibleGematria.Api.Controllers
             return Ok(results);
         }
         [HttpPost("export")]
-        public ActionResult ExportCsv([FromBody] SearchRequest request)
+        public ActionResult ExportXlsx([FromBody] SearchRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.HebrewInput))
             {
@@ -57,10 +56,32 @@ namespace BibleGematria.Api.Controllers
 
             var results = request.NoCrossEtnachta ? service.FindPhraseMatchesNoBoundary(target) : service.FindPhraseMatches(target);
 
-            string csv = CsvExporter.Export(results, request.HebrewInput, target);
-            byte[] bytes = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(csv)).ToArray();
-            return File(bytes, "text/csv", "gematria-results.csv");
+            byte[] bytes = XlsxExporter.Export(results, request.HebrewInput, target);
+            string fileName = BuildExportFileName(request.HebrewInput);
 
+            // Hebrew filenames need percent-encoding — HTTP headers are ASCII-only,
+            // and the plain filename= fallback can't carry non-ASCII text at all.
+            string encodedFileName = Uri.EscapeDataString(fileName);
+            Response.Headers["Content-Disposition"] = $"attachment; filename*=UTF-8''{encodedFileName}";
+
+            return new FileContentResult(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        }
+
+        private static string BuildExportFileName(string hebrewInput)
+        {
+            string[] invalidChars = System.IO.Path.GetInvalidFileNameChars().Select(c => c.ToString()).ToArray();
+
+            string[] firstThreeWords = hebrewInput
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Take(3)
+                .Select(word => invalidChars.Aggregate(word, (current, ch) => current.Replace(ch, "")))
+                .ToArray();
+
+            string namePart = string.Join("-", firstThreeWords);
+
+            return string.IsNullOrEmpty(namePart)
+                ? "gematria-results.xlsx"
+                : $"gematria-results-{namePart}.xlsx";
         }
     }
 
